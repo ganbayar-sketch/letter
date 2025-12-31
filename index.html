@@ -79,8 +79,26 @@
 
         .meta{font-size:13px; color:var(--muted); margin-left:auto}
 
-        /* small screens */
-        @media (max-width:520px){ .card{padding:22px} h1{font-size:22px} .letter{font-size:16px} }
+        /* small screens (mobile-first tweaks) */
+        @media (max-width:520px){ 
+            body{padding:20px}
+            .card{padding:20px; max-width:96vw; border-radius:14px}
+            h1{font-size:20px}
+            .letter{font-size:17px; padding:20px; line-height:1.6}
+            .envelope{margin:14px 0 10px; perspective:600px}
+            .envelope .flap{height:56px; top:6px; left:6px; right:6px; border-radius:10px}
+            .envelope .body{padding-top:76px; padding:14px}
+            .envelope:not(.open):hover{ transform:none; box-shadow:0 10px 30px rgba(17,17,17,0.08) }
+            .letter{transform:translateY(28%)}
+            .letter.closed{ transform:translateY(28%); }
+            .controls{flex-direction:column; gap:12px}
+            .controls button{width:100%; padding:14px 16px; font-size:16px}
+            .logo{width:56px; height:56px}
+            .heart{width:36px; height:36px}
+        }
+
+        /* touch-device specific: disable hover effects and reduce animations */
+        .touch .envelope:not(.open):hover, .touch .envelope:not(.open):hover .flap{ transform:none; box-shadow:none }
     </style>
 </head>
 <body>
@@ -125,9 +143,8 @@
         </div>
     </main>
 
-    <div class="hearts" aria-hidden="true"></div>
-
-    <script>
+        <div class="hearts" aria-hidden="true"></div>
+        <script>
         const letter = document.getElementById('letter');
         const envelope = document.getElementById('envelope');
         const toggle = document.getElementById('toggle');
@@ -168,9 +185,16 @@
             }else{
                 // fallback using textarea + execCommand
                 try{
-                    const ta = document.createElement('textarea'); ta.value = text; ta.style.position='fixed'; ta.style.left='-9999px'; document.body.appendChild(ta); ta.select();
-                    document.execCommand('copy'); document.body.removeChild(ta);
-                    copy.textContent = 'Хуулж авсан'; setTimeout(()=> copy.textContent = 'Хуулж авах',1500);
+                    const ta = document.createElement('textarea');
+                    ta.value = text;
+                    ta.style.position = 'fixed';
+                    ta.style.left = '-9999px';
+                    document.body.appendChild(ta);
+                    ta.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(ta);
+                    copy.textContent = 'Хуулж авсан';
+                    setTimeout(()=> copy.textContent = 'Хуулж авах',1500);
                 }catch(e){ alert('Клипбоард руу хуулах боломжгүй байна.'); }
             }
         });
@@ -180,19 +204,24 @@
         const HEARTS_COUNT = 26;
         const HEARTS = ['❤️','💖','💘','💗','💞','💓'];
         const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints;
+        if(isTouch) document.documentElement.classList.add('touch');
 
         function spawnHearts(n = HEARTS_COUNT){
             if(!heartsContainer) return;
             heartsContainer.innerHTML = '';
             const w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
-            for(let i=0;i<n;i++){
+            // reduce count and animation intensity on touch devices/smaller screens
+            let count = n;
+            if(isTouch || w < 520) count = Math.min(n, 8);
+            for(let i=0;i<count;i++){
                 const el = document.createElement('span');
                 el.className = 'heart-bubble';
                 el.textContent = HEARTS[Math.floor(Math.random()*HEARTS.length)];
-                const size = 12 + Math.round(Math.random()*28); // px
+                const size = (isTouch || w < 520) ? (14 + Math.round(Math.random()*20)) : (12 + Math.round(Math.random()*28)); // px
                 const left = Math.round(Math.random()*100);
-                const delay = (Math.random()*6).toFixed(2) + 's';
-                const duration = (6 + Math.random()*8).toFixed(2) + 's';
+                const delay = (Math.random()*4).toFixed(2) + 's';
+                const duration = isTouch || w < 520 ? (4 + Math.random()*6).toFixed(2) + 's' : (6 + Math.random()*8).toFixed(2) + 's';
                 el.style.left = left + '%';
                 el.style.fontSize = size + 'px';
                 el.style.animationDelay = delay;
