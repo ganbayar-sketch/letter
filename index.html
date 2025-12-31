@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Чамдаа — Захиа</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+    <style>
+        :root{
+            --bg1:#fff1f6; --bg2:#ffeef8; --card:#ffffff; --accent:#ff5c8a; --muted:#6b6b6b;
+        }
+        *{box-sizing:border-box}
+        html,body{height:100%}
+        body{
+            margin:0; font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial; 
+            background:linear-gradient(135deg,var(--bg1),var(--bg2));
+            display:flex; align-items:center; justify-content:center; padding:48px;
+            -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+        }
+        .card{
+            width:100%; max-width:760px; background:var(--card); border-radius:18px;
+            box-shadow:0 10px 30px rgba(17,17,17,0.08); padding:36px; position:relative; overflow:hidden;
+            border:1px solid rgba(255,92,138,0.08);
+        }
+        .header{display:flex; gap:16px; align-items:center}
+        .logo{width:68px; height:68px; display:grid; place-items:center; background:linear-gradient(135deg,rgba(255,92,138,0.12),rgba(255,92,138,0.04)); border-radius:14px}
+        .heart{width:40px;height:40px; transform-origin:center; animation:pulse 2s infinite}
+        @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.06)}100%{transform:scale(1)} }
+        /* subtle float when open */
+        @keyframes float{0%{transform:translateY(0)}50%{transform:translateY(-4px)}100%{transform:translateY(0)}}
+        .card.open .heart{animation: pulse 2s infinite, float 3s ease-in-out infinite}
+        h1{font-family:'Playfair Display',serif; margin:0; font-size:28px; color:#2b2b2b}
+        p.lead{margin:6px 0 18px; color:var(--muted)}
+
+        .envelope{width:100%; margin:18px 0 12px; perspective:900px}
+        .envelope .flap{position:absolute; left:8px; right:8px; top:8px; height:64px; background:linear-gradient(180deg,#ffdbe6,#ffeef8); border-radius:8px; transform-origin:top center; transform:rotateX(0deg); transition:transform .7s cubic-bezier(.2,.9,.3,1); box-shadow:0 8px 20px rgba(17,17,17,0.06); backface-visibility:hidden}
+        .envelope .body{background:linear-gradient(180deg,#fff,#fff); border-radius:8px; padding:18px; padding-top:86px; position:relative; overflow:hidden; box-shadow:0 6px 18px rgba(17,17,17,0.04)}
+        .envelope.open .flap{transform:rotateX(-180deg)}
+        .letter{
+            background:linear-gradient(180deg, rgba(255,244,249,0.9), rgba(255,250,251,0.6));
+            border-radius:12px; padding:26px; line-height:1.65; color:#2b2b2b; font-size:17px; margin-bottom:18px;
+            transform-origin:top center; transform-style:preserve-3d;
+            transform:translateY(40%);
+            transition:transform .6s cubic-bezier(.2,.9,.3,1), opacity .45s ease, box-shadow .45s ease;
+            box-shadow:0 6px 18px rgba(17,17,17,0.04);
+        }
+        /* closed (folded) state */
+        .letter.closed{ transform:translateY(40%); opacity:0; pointer-events:none; }
+        .envelope.open .letter{ transform:translateY(0); opacity:1; pointer-events:auto }
+        .signature{margin-top:16px; text-align:right; color:var(--accent); font-weight:600}
+
+        /* hearts background */
+        .hearts{position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden}
+        .heart-bubble{position:absolute; bottom:-10%; display:inline-block; transform:translateY(0) rotate(0); will-change:transform, opacity; opacity:.9}
+        @keyframes floatUp{0%{transform:translateY(0) rotate(0); opacity:0}10%{opacity:1}100%{transform:translateY(-140vh) rotate(360deg); opacity:0}}
+        .heart-bubble{animation-name:floatUp; animation-timing-function:linear; animation-iteration-count:infinite}
+        .hearts.reduced .heart-bubble{animation:none; opacity:.85; transform:translateY(-10vh)}
+
+        /* ensure card stays above hearts */
+        .card{position:relative; z-index:2}
+
+        .controls{display:flex; gap:10px; align-items:center}
+        button{background:var(--accent); color:#fff; border:0; padding:10px 14px; border-radius:10px; cursor:pointer; font-weight:600}
+        button.ghost{background:transparent; color:var(--accent); border:1px solid rgba(255,92,138,0.16)}
+        button:active{transform:translateY(1px)}
+        button[disabled]{opacity:.55; cursor:not-allowed}
+
+        .meta{font-size:13px; color:var(--muted); margin-left:auto}
+
+        /* small screens */
+        @media (max-width:520px){ .card{padding:22px} h1{font-size:22px} .letter{font-size:16px} }
+    </style>
+</head>
+<body>
+    <main class="card" role="main" aria-labelledby="title">
+        <div class="header">
+            <div class="logo" aria-hidden="true">
+                <svg class="heart" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 21s-7.2-4.4-9.2-7.1C-0.3 9.6 4 4 8.4 6.6 10.2 7.7 11.2 9.1 12 10.1c.8-1 1.8-2.4 3.6-3.5C20 4 24.3 9.6 21.2 13.9 19.2 16.6 12 21 12 21z" fill="url(#g)" opacity="0.98"/>
+                    <defs><linearGradient id="g" x1="0" x2="1"><stop offset="0" stop-color="#ff8fb3"/><stop offset="1" stop-color="#ff5c8a"/></linearGradient></defs>
+                </svg>
+            </div>
+            <div>
+                <h1 id="title">Чамдаа</h1>
+                <p class="lead"></p>
+            </div>
+            <div class="meta">Хайрт болорцэцэг ❤️</div>
+        </div>
+
+        <div class="envelope" id="envelope" role="button" tabindex="0" aria-expanded="false" aria-controls="letter" title="Захиа нээх">
+            <div class="flap" aria-hidden="true"></div>
+            <div class="body">
+                <article class="letter closed" id="letter" aria-live="polite">
+            <p>Чамдаа,</p>
+            <p>
+               Шинэ жилийн энэ намуухан мөчид чамд хэдэн үг бичиж суухад сэтгэл өөрийн эрхгүй дулаацаж байна. Бид хоёрын танилцсан анхны өдрүүд санаанд тодхон. Зуны тэр цагт, нэг л энгийн хэрнээ дурсамжтай байдлаар багш хийж байхдаа танилцсан маань өнөөдрийн энэ харилцааны эхлэл болно гэж тэр үед огт бодоогүй. Чи анхнаасаа л их даруухан, зөөлөн, бусдыг бодсон төрхтэй охин байсан. Тэр зан чинь одоо ч хэвээрээ байгаад би талархдаг.
+
+Өдөр хоног өнгөрөх тусам бид хоёрын хоорондын ойлголцол илүү гүнзгийрч, чиний дэргэд байх нь надад тайван, дулаахан мэдрэмж төрүүлдэг болсон. Хэт их үг, сүржин амлалтгүйгээр зүгээр л хамтдаа байх, нэгнийгээ сонсох, дэмжих нь надад хангалттай санагддаг.
+            </p>
+            <p>
+                Шинэ он бид хоёрт илүү их инээмсэглэл, ойлголцол, жижигхэн аз жаргалуудыг авчирна гэж итгэж байна. Алхам алхмаар, яаралгүй, өөрсдийнхөөрөө энэ харилцаагаа үргэлжлүүлэхийг хүсэж байна. Чи байгаагаараа надад хангалттай үнэ цэнтэй хүн шүү.
+
+Шинэ ондоо чи минь эрүүл энх, сэтгэл дүүрэн, үргэлж миний хажууд байгаарай.
+
+Хайрт Ганбаяр-с
+                </article>
+            </div>
+        </div>
+
+        <div class="controls" aria-hidden="false">
+            <button id="toggle" aria-controls="letter" aria-expanded="false">Захиа нээх</button>
+            <button class="ghost" id="copy">Хуулж авах</button>
+        </div>
+    </main>
+
+    <div class="hearts" aria-hidden="true"></div>
+
+    <script>
+        const letter = document.getElementById('letter');
+        const envelope = document.getElementById('envelope');
+        const toggle = document.getElementById('toggle');
+        const copy = document.getElementById('copy');
+        const root = document.querySelector('.card');
+        let open = false; // start closed (in envelope)
+
+        function setOpen(state){
+            open = state;
+            envelope.classList.toggle('open', open);
+            letter.classList.toggle('closed', !open);
+            root.classList.toggle('open', open);
+            toggle.setAttribute('aria-expanded', String(open));
+            envelope.setAttribute('aria-expanded', String(open));
+            toggle.textContent = open ? 'Захиаг хаах' : 'Захиа нээх';
+            copy.disabled = !open;
+        }
+
+        // envelope click / keyboard interaction
+        function toggleEnvelope(){ setOpen(!open); }
+        envelope.addEventListener('click', toggleEnvelope);
+        envelope.addEventListener('keydown', (e)=>{ if(e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleEnvelope(); } });
+
+        // toggle button also toggles the envelope
+        toggle.addEventListener('click', ()=> setOpen(!open));
+
+        copy.addEventListener('click', async ()=>{
+            if(copy.disabled) return; // guard when closed or unavailable
+            const text = letter.innerText.trim();
+            if(!text){ alert('Захиа хоосон байна.'); return }
+            // use navigator.clipboard when available, otherwise fallback
+            if(navigator.clipboard && navigator.clipboard.writeText){
+                try{
+                    await navigator.clipboard.writeText(text);
+                    copy.textContent = 'Хуулж авсан';
+                    setTimeout(()=> copy.textContent = 'Хуулж авах',1500);
+                }catch(e){ alert('Клипбоард руу хуулахад алдаа гарлаа.'); }
+            }else{
+                // fallback using textarea + execCommand
+                try{
+                    const ta = document.createElement('textarea'); ta.value = text; ta.style.position='fixed'; ta.style.left='-9999px'; document.body.appendChild(ta); ta.select();
+                    document.execCommand('copy'); document.body.removeChild(ta);
+                    copy.textContent = 'Хуулж авсан'; setTimeout(()=> copy.textContent = 'Хуулж авах',1500);
+                }catch(e){ alert('Клипбоард руу хуулах боломжгүй байна.'); }
+            }
+        });
+
+        // --- animated hearts background ---
+        const heartsContainer = document.querySelector('.hearts');
+        const HEARTS_COUNT = 26;
+        const HEARTS = ['❤️','💖','💘','💗','💞','💓'];
+        const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        function spawnHearts(n = HEARTS_COUNT){
+            if(!heartsContainer) return;
+            heartsContainer.innerHTML = '';
+            const w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+            for(let i=0;i<n;i++){
+                const el = document.createElement('span');
+                el.className = 'heart-bubble';
+                el.textContent = HEARTS[Math.floor(Math.random()*HEARTS.length)];
+                const size = 12 + Math.round(Math.random()*28); // px
+                const left = Math.round(Math.random()*100);
+                const delay = (Math.random()*6).toFixed(2) + 's';
+                const duration = (6 + Math.random()*8).toFixed(2) + 's';
+                el.style.left = left + '%';
+                el.style.fontSize = size + 'px';
+                el.style.animationDelay = delay;
+                el.style.animationDuration = duration;
+                heartsContainer.appendChild(el);
+            }
+        }
+
+        // respawn on resize (debounced)
+        let resizeTimer;
+        window.addEventListener('resize', ()=>{ clearTimeout(resizeTimer); resizeTimer = setTimeout(()=> spawnHearts(), 220); });
+
+        // if reduced motion is requested, keep only a few and no animation
+        if(prefersReduced){ heartsContainer.classList.add('reduced'); spawnHearts(6); }
+        else spawnHearts();
+
+        // initialize UI state on load
+        setOpen(false);
+    </script>
+</body>
+</html>
